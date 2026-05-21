@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Eastside Catholic Investing Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+  :root{
+    --navy:#0A1A2F;
+    --navy-2:#0F2440;
+    --navy-3:#152F52;
+    --bone:#F5F3EE;
+    --bone-2:#EBE7DE;
+    --ink:#0B1220;
+    --orange:#E87722;
+    --orange-2:#F08A3C;
+    --up:#4ADE80;
+    --down:#F87171;
+    --muted:#6B7486;
+    --line:rgba(10,26,47,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bone);color:var(--navy);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-feature-settings:"tnum" 1}
+  .serif{font-family:'Instrument Serif',serif;font-weight:400;letter-spacing:-0.01em}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+  /* ---------- LOADER ---------- */
+  #loader{
+    position:fixed;inset:0;z-index:9999;background:var(--navy);color:var(--bone);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
+    transition:opacity .8s ease,visibility .8s ease;
+  }
+  #loader.done{opacity:0;visibility:hidden;pointer-events:none}
+  .loader-brand{display:flex;align-items:center;gap:14px;opacity:.9}
+  .loader-brand img{width:48px;height:48px;object-fit:contain}
+  .loader-brand .t{font-family:'Instrument Serif',serif;font-size:22px;letter-spacing:.02em}
+  .loader-chart{width:min(560px,82vw);height:160px;position:relative}
+  .loader-chart svg{width:100%;height:100%;overflow:visible}
+  .loader-chart .grid line{stroke:rgba(255,255,255,.07);stroke-width:1}
+  .loader-path{fill:none;stroke:var(--orange);stroke-width:2;stroke-linecap:round;
+    stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 2.2s ease-out forwards}
+  .loader-fill{fill:url(#lg);opacity:0;animation:fadein .6s ease 1.4s forwards}
+  .loader-dot{fill:var(--orange);opacity:0;animation:fadein .4s ease 2s forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @keyframes fadein{to{opacity:.55}}
+  .loader-bar-wrap{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.16em;color:rgba(255,255,255,.55);display:flex;gap:18px;align-items:center}
+  .loader-bar-wrap .bar{width:140px;height:2px;background:rgba(255,255,255,.12);position:relative;overflow:hidden}
+  .loader-bar-wrap .bar::after{content:"";position:absolute;inset:0;background:var(--orange);transform-origin:left;animation:barfill 2.2s ease-out forwards}
+  @keyframes barfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  .loader-quote{font-family:'Instrument Serif',serif;font-style:italic;font-size:18px;color:rgba(255,255,255,.7);max-width:420px;text-align:center;opacity:0;animation:rise .8s ease .9s forwards}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- TICKER ---------- */
+  .tickerbar{position:sticky;top:0;z-index:50;background:var(--navy);color:var(--bone);border-bottom:1px solid rgba(255,255,255,.08);overflow:hidden;height:36px;display:flex;align-items:center}
+  .tickerbar .label{flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;padding:0 14px;border-right:1px solid rgba(255,255,255,.12);height:100%;display:flex;align-items:center;color:var(--orange)}
+  .tickerbar .track{flex:1;overflow:hidden;position:relative;mask-image:linear-gradient(90deg,transparent 0,#000 6%,#000 94%,transparent 100%)}
+  .ticker-move{display:flex;gap:36px;white-space:nowrap;animation:tickscroll 60s linear infinite;padding-left:36px;align-items:center;height:100%}
+  @keyframes tickscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .tick{font-family:'JetBrains Mono',monospace;font-size:12.5px;display:inline-flex;gap:8px;align-items:baseline}
+  .tick b{font-weight:600}
+  .tick .pct{font-size:11.5px}
+  .up{color:var(--up)} .dn{color:var(--down)}
+  .tick .arrow{font-size:10px}
+
+  /* ---------- NAV ---------- */
+  nav.top{position:sticky;top:36px;z-index:40;background:var(--navy);color:var(--bone)}
+  nav.top .inner{max-width:1280px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:64px;gap:24px}
+  nav .brand{display:flex;align-items:center;gap:11px;cursor:pointer}
+  nav .brand img{width:36px;height:36px;object-fit:contain;flex-shrink:0}
+  nav .brand .brand-text .main{font-weight:600;font-size:14px;letter-spacing:-.01em;line-height:1.1;color:var(--bone)}
+  nav .brand .brand-text .sub{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(245,243,238,.45);font-weight:500;text-transform:uppercase;margin-top:2px}
+  nav .links{display:flex;gap:32px;justify-content:center;font-size:13px;letter-spacing:.04em}
+  nav .links a{color:rgba(245,243,238,.7);padding:4px 0;position:relative;transition:color .2s}
+  nav .links a::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1px;background:var(--orange);transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
+  nav .links a:hover{color:var(--bone)}
+  nav .links a:hover::after{transform:scaleX(1)}
+  nav .nav-right{display:flex;justify-content:flex-end;align-items:center;gap:16px}
+  nav .nav-divider{width:1px;height:28px;background:rgba(245,243,238,.12)}
+  nav .nav-date{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:rgba(245,243,238,.4)}
+
+  /* ---------- HERO ---------- */
+  .hero{max-width:1280px;margin:0 auto;padding:64px 28px 88px;position:relative}
+  .hero-grid{max-width:780px;margin:0 auto;text-align:center}
+  .hero .dek{margin-left:auto;margin-right:auto}
+  .hero-ctas{justify-content:center}
+  .hero-stats{margin-left:auto;margin-right:auto}
+  .hero h1{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(52px,7vw,104px);line-height:.95;letter-spacing:-.02em;margin:0 0 24px;color:var(--navy)}
+  .hero h1 em{font-style:italic;color:var(--orange)}
+  .hero .dek{font-size:17px;line-height:1.55;color:#2A3A52;max-width:520px;margin-bottom:32px}
+  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line);padding-top:22px;max-width:520px}
+  .hero-stats .s{border-right:1px solid var(--line);padding-right:20px}
+  .hero-stats .s:last-child{border-right:0}
+  .hero-stats .n{font-family:'Instrument Serif',serif;font-size:36px;line-height:1}
+  .hero-stats .l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:6px;font-family:'JetBrains Mono',monospace}
+  .hero-ctas{display:flex;gap:14px;margin-top:28px}
+  .btn{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;font-size:13.5px;letter-spacing:.02em;font-weight:500;border-radius:2px;transition:all .2s ease;cursor:pointer;border:none}
+  .btn-primary{background:var(--navy);color:var(--bone)}
+  .btn-primary:hover{background:var(--orange);color:var(--navy)}
+  .btn-ghost{background:transparent;color:var(--navy);border:1px solid var(--navy)}
+  .btn-ghost:hover{background:var(--navy);color:var(--bone)}
+
+
+
+  /* STATIC BAND */
+  .static-band{background:var(--navy);color:var(--bone);padding:22px 0;overflow:hidden;margin:0}
+  .static-band-inner{display:flex;align-items:center;justify-content:center;gap:36px;font-family:'Instrument Serif',serif;font-size:28px;font-style:italic;flex-wrap:wrap;padding:0 28px;text-align:center}
+  .static-band-inner .dot{width:7px;height:7px;background:var(--orange);border-radius:50%;display:inline-block;flex-shrink:0}
+
+  /* SECTION */
+  section{padding:96px 28px;max-width:1280px;margin:0 auto}
+  .section-head{display:grid;grid-template-columns:180px 1fr;gap:40px;border-top:1px solid var(--line);padding-top:24px;margin-bottom:56px}
+  .section-head .num{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.2em;color:var(--orange)}
+  .section-head h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(40px,5vw,72px);line-height:1;margin:0;letter-spacing:-.02em}
+  .section-head h2 em{font-style:italic;color:var(--orange)}
+  .section-head .intro{margin-top:14px;max-width:640px;font-size:16px;color:#2A3A52;line-height:1.6}
+
+  /* ABOUT */
+  .about-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--line)}
+  .about-card{background:var(--bone);padding:36px 28px;min-height:260px;display:flex;flex-direction:column;justify-content:space-between}
+  .about-card .ic{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);letter-spacing:.14em}
+  .about-card h3{font-family:'Instrument Serif',serif;font-weight:400;font-size:30px;margin:18px 0 8px;line-height:1.05}
+  .about-card p{font-size:14.5px;line-height:1.6;color:#3a4a62;margin:0}
+  .about-card .n{font-family:'Instrument Serif',serif;font-size:64px;line-height:1;color:var(--navy);opacity:.12;user-select:none}
+
+  /* RESOURCES */
+  .res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .res-card{background:var(--bone);border:1px solid var(--line);padding:32px 28px;position:relative;overflow:hidden;cursor:pointer;transition:all .3s ease;display:flex;flex-direction:column;gap:16px}
+  .res-card::before{content:"";position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--orange);transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
+  .res-card:hover{background:var(--navy);color:var(--bone);border-color:var(--navy)}
+  .res-card:hover::before{transform:scaleX(1)}
+  .res-card:hover .res-tag{color:var(--orange);border-color:rgba(255,255,255,.2)}
+  .res-card:hover .res-desc{color:rgba(245,243,238,.75)}
+  .res-card:hover .res-link{color:var(--orange)}
+  .res-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--orange);border:1px solid var(--line);padding:4px 10px;display:inline-block;border-radius:2px;width:fit-content}
+  .res-card h4{font-family:'Instrument Serif',serif;font-weight:400;font-size:28px;margin:0;line-height:1.05;letter-spacing:-.01em}
+  .res-desc{font-size:14px;line-height:1.6;color:#3a4a62;margin:0}
+  .res-link{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--muted);margin-top:auto;display:flex;align-items:center;gap:8px;transition:color .2s}
+  .res-link::after{content:"→"}
+
+  /* SPOTLIGHT */
+  .spot-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:20px}
+  .spot{background:var(--bone);border:1px solid var(--line);padding:0;position:relative;overflow:hidden;transition:transform .3s ease,box-shadow .3s ease}
+  .spot:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(10,26,47,.12)}
+  .spot .ph{aspect-ratio:4/5;background:
+    repeating-linear-gradient(135deg,var(--navy) 0 2px,transparent 2px 12px),
+    linear-gradient(180deg,var(--navy-3),var(--navy));
+    position:relative;display:flex;align-items:flex-end;padding:16px;color:var(--bone)}
+  .spot.advisor .ph{background:
+    repeating-linear-gradient(135deg,rgba(232,119,34,.4) 0 2px,transparent 2px 12px),
+    linear-gradient(180deg,rgba(232,119,34,.3),var(--navy))}
+  .spot .ph .role{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;color:var(--orange);background:rgba(10,26,47,.7);padding:4px 8px;line-height:1.3}
+  .spot .body{padding:18px 16px 20px}
+  .spot .body h5{font-family:'Instrument Serif',serif;font-weight:400;font-size:19px;margin:0 0 3px;line-height:1.1}
+  .spot .body .grade{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;margin-bottom:10px}
+  .spot .body q{font-family:'Instrument Serif',serif;font-style:italic;font-size:14px;line-height:1.4;color:#2A3A52;display:block;border-top:1px solid var(--line);padding-top:10px;margin:0}
+  .spot.advisor .body q{color:#3a4a62}
+
+  /* JOIN */
+  .join{background:var(--navy);color:var(--bone);padding:96px 28px;margin-top:96px}
+  .join-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start}
+  .join h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(44px,5.5vw,80px);line-height:1;margin:0 0 24px;letter-spacing:-.02em}
+  .join h2 em{font-style:italic;color:var(--orange)}
+  .join p{font-size:16px;line-height:1.6;color:rgba(245,243,238,.75);max-width:440px;margin-bottom:32px}
+  .join-bullets{list-style:none;padding:0;margin:0}
+  .join-bullets li{padding:16px 0;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:baseline;gap:16px;font-size:15px}
+  .join-bullets li:last-child{border-bottom:1px solid rgba(255,255,255,.1)}
+  .join-bullets li b{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);letter-spacing:.14em;font-weight:500;min-width:32px}
+
+  form.contact{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);padding:36px}
+  form.contact .field{margin-bottom:20px}
+  form.contact label{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;color:rgba(245,243,238,.55);margin-bottom:8px;text-transform:uppercase}
+  form.contact input,form.contact select,form.contact textarea{
+    width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.2);
+    color:var(--bone);font-family:'Inter',sans-serif;font-size:16px;padding:8px 0;outline:none;transition:border-color .2s}
+  form.contact input:focus,form.contact select:focus,form.contact textarea:focus{border-color:var(--orange)}
+  form.contact textarea{resize:vertical;min-height:70px}
+  form.contact option{background:var(--navy);color:var(--bone)}
+  form.contact .row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  form.contact button{margin-top:12px;width:100%;padding:16px;background:var(--orange);color:var(--navy);font-weight:600;letter-spacing:.06em;font-size:13px;cursor:pointer;border:none;border-radius:2px;transition:background .2s}
+  form.contact button:hover{background:var(--bone)}
+
+  /* FOOTER */
+  footer{background:var(--navy);color:var(--bone);padding:64px 28px 32px}
+  .foot{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .foot .brand-f{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .foot .brand-f img{width:52px;height:52px;object-fit:contain;flex-shrink:0}
+  .foot .brand-f .n{font-family:'Instrument Serif',serif;font-size:22px;line-height:1.15}
+  .foot .brand-f small{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;color:rgba(245,243,238,.5);text-transform:uppercase;display:block;margin-top:3px}
+  .foot p.tag{color:rgba(245,243,238,.6);font-size:14px;line-height:1.5;max-width:300px;margin:0}
+  .foot h6{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--orange);text-transform:uppercase;margin:0 0 16px;font-weight:500}
+  .foot ul{list-style:none;padding:0;margin:0}
+  .foot li{font-size:14px;margin-bottom:10px;color:rgba(245,243,238,.75)}
+  .foot li a:hover{color:var(--orange)}
+  .footbot{max-width:1280px;margin:32px auto 0;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(245,243,238,.45);letter-spacing:.12em}
+
+  /* GSAP handles initial states in JS — no CSS hiding needed */
+
+  /* RESPONSIVE */
+  @media(max-width:1100px){
+    .spot-grid{grid-template-columns:repeat(3,1fr)}
+  }
+  @media(max-width:960px){
+    .hero-grid,.join-inner{grid-template-columns:1fr;gap:32px}
+    .about-grid,.res-grid{grid-template-columns:1fr 1fr}
+    .spot-grid{grid-template-columns:1fr 1fr}
+    .section-head{grid-template-columns:1fr}
+    nav .links{display:none}
+
+    .foot{grid-template-columns:1fr 1fr;gap:32px}
+  }
+  @media(max-width:620px){
+    .about-grid,.res-grid,form.contact .row,.spot-grid{grid-template-columns:1fr}
+    .hero-stats{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOADER ============ -->
+<div id="loader">
+  <div class="loader-brand">
+    <img src="assets/logo.png" alt="" />
+    <div class="t">Eastside Catholic Investing Club</div>
+  </div>
+  <div class="loader-chart">
+    <svg viewBox="0 0 560 160" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="lg" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#E87722" stop-opacity=".5"/>
+          <stop offset="100%" stop-color="#E87722" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <g class="grid">
+        <line x1="0" y1="40" x2="560" y2="40"/>
+        <line x1="0" y1="80" x2="560" y2="80"/>
+        <line x1="0" y1="120" x2="560" y2="120"/>
+      </g>
+      <path class="loader-fill" d="M0,130 L40,120 L80,128 L120,100 L160,112 L200,82 L240,92 L280,70 L320,78 L360,50 L400,62 L440,36 L480,44 L520,22 L560,28 L560,160 L0,160 Z"/>
+      <path class="loader-path" d="M0,130 L40,120 L80,128 L120,100 L160,112 L200,82 L240,92 L280,70 L320,78 L360,50 L400,62 L440,36 L480,44 L520,22 L560,28"/>
+      <circle class="loader-dot" cx="560" cy="28" r="5"/>
+    </svg>
+  </div>
+  <div class="loader-quote">&ldquo;The stock market is a device for transferring money from the impatient to the patient.&rdquo;</div>
+  <div class="loader-bar-wrap">
+    <span>LOADING</span>
+    <span class="bar"></span>
+    <span id="loadPct">00%</span>
+  </div>
+</div>
+
+<!-- ============ TICKER ============ -->
+<div class="tickerbar">
+  <div class="label">ECS · LIVE</div>
+  <div class="track"><div class="ticker-move" id="tickerMove"></div></div>
+</div>
+
+<!-- ============ NAV ============ -->
+<nav class="top">
+  <div class="inner">
+    <div class="brand">
+      <img src="assets/logo.png" alt="Eastside Catholic Investing Club logo" />
+      <div class="brand-text">
+        <div class="main">Investing Club</div>
+        <div class="sub">EC · Eastside Catholic</div>
+      </div>
+    </div>
+    <div class="links">
+      <a href="#about">About</a>
+      <a href="#resources">Resources</a>
+      <a href="#members">Members</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-divider"></div>
+      <div class="nav-date">EST. 2025</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<div class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow gsap-up" style="margin-bottom:24px">A Student-Led Market Society</div>
+      <h1 class="gsap-up">Learn the<br/>market. <em>Build</em><br/>the portfolio.</h1>
+      <p class="dek gsap-up">We're a group of Eastside Catholic students studying how capital markets work — trading paper portfolios on Quantaify, debating picks, and managing a collective fund together.</p>
+      <div class="hero-ctas gsap-up">
+        <a href="#join" class="btn btn-primary">Apply to Join →</a>
+        <a href="#about" class="btn btn-ghost">How It Works</a>
+      </div>
+      <div class="hero-stats gsap-up">
+        <div class="s"><div class="n" data-count="34">0</div><div class="l">Members</div></div>
+        <div class="s"><div class="n">+18.2<span style="font-size:22px;color:var(--orange)">%</span></div><div class="l">Club YTD</div></div>
+        <div class="s"><div class="n" data-count="2025">0</div><div class="l">Founded</div></div>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+<!-- ============ STATIC BAND ============ -->
+<div class="static-band">
+  <div class="static-band-inner">
+    <span>Research</span>
+    <span class="dot"></span>
+    <span>Debate</span>
+    <span class="dot"></span>
+    <span>Invest</span>
+    <span class="dot"></span>
+    <span>Repeat</span>
+    <span class="dot"></span>
+    <span>Paper trading on Quantaify</span>
+    <span class="dot"></span>
+    <span>Weekly pitches</span>
+    <span class="dot"></span>
+    <span>Club portfolio</span>
+  </div>
+</div>
+
+<!-- ============ ABOUT ============ -->
+<section id="about">
+  <div class="section-head">
+    <div class="num gsap-fade">/ 01 — ABOUT</div>
+    <div>
+      <h2 class="gsap-up">A hands-on education in <em>markets</em>.</h2>
+      <p class="intro gsap-up">The Investing Club isn't a finance lecture. Members run real paper portfolios, pitch ideas to each other every week, and collectively vote on moves for the club's group fund. Everyone learns by doing.</p>
+    </div>
+  </div>
+  <div class="about-grid">
+    <div class="about-card gsap-scale">
+      <div>
+        <div class="ic">/ 01</div>
+        <h3>Weekly meetings</h3>
+        <p>Thursdays at 3:30pm. Market recap, stock pitches from members, and strategy discussion. Open to all grades — no experience required.</p>
+      </div>
+      <div class="n">W</div>
+    </div>
+    <div class="about-card gsap-scale">
+      <div>
+        <div class="ic">/ 02</div>
+        <h3>Paper trading comp</h3>
+        <p>Every member gets a $10,000 virtual portfolio on Quantaify. Top three returns at end of semester take home prizes from the club fund.</p>
+      </div>
+      <div class="n">Q</div>
+    </div>
+    <div class="about-card gsap-scale">
+      <div>
+        <div class="ic">/ 03</div>
+        <h3>Group portfolio</h3>
+        <p>We manage a collaborative long-only portfolio. Members pitch, the club votes, officers execute. Every trade is logged and reviewed the following meeting.</p>
+      </div>
+      <div class="n">G</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESOURCES ============ -->
+<section id="resources">
+  <div class="section-head">
+    <div class="num gsap-fade">/ 02 — RESOURCES</div>
+    <div>
+      <h2 class="gsap-up">Everything you <em>need</em>.</h2>
+      <p class="intro gsap-up">Useful links and tools for members. Bookmark this page and come back whenever you need a reference.</p>
+    </div>
+  </div>
+  <div class="res-grid">
+    <div class="res-card gsap-scale">
+      <div class="res-tag">TRADING</div>
+      <h4>Quantaify.org</h4>
+      <p class="res-desc">Our official paper trading platform. Sign up with your school email to join the ECS club competition and track your virtual portfolio.</p>
+      <div class="res-link">quantaify.org</div>
+    </div>
+    <div class="res-card gsap-scale">
+      <div class="res-tag">LEARNING</div>
+      <h4>Investopedia</h4>
+      <p class="res-desc">The best place to learn financial concepts — from P/E ratios to bond duration. Start with the stock basics simulator if you're new.</p>
+      <div class="res-link">investopedia.com</div>
+    </div>
+    <div class="res-card gsap-scale">
+      <div class="res-tag">MARKET DATA</div>
+      <h4>Yahoo Finance</h4>
+      <p class="res-desc">Free real-time quotes, charts, news, and earnings calendars. Build a watchlist of stocks you're researching before your pitch.</p>
+      <div class="res-link">finance.yahoo.com</div>
+    </div>
+    <div class="res-card gsap-scale">
+      <div class="res-tag">CLUB</div>
+      <h4>Portfolio Tracker</h4>
+      <p class="res-desc">Our shared Google Sheet tracking the club's group portfolio — all positions, entry prices, and current returns updated weekly by the Treasurer.</p>
+      <div class="res-link">Google Sheets (members only)</div>
+    </div>
+    <div class="res-card gsap-scale">
+      <div class="res-tag">RESEARCH</div>
+      <h4>SEC EDGAR</h4>
+      <p class="res-desc">Official filings — 10-K annual reports, 10-Q quarterlies, and 8-K news events straight from the source. Where serious research starts.</p>
+      <div class="res-link">sec.gov/edgar</div>
+    </div>
+    <div class="res-card gsap-scale">
+      <div class="res-tag">READING</div>
+      <h4>Club Reading List</h4>
+      <p class="res-desc">Books recommended by officers and Mr. Trepanier: <em>The Intelligent Investor</em>, <em>One Up on Wall Street</em>, <em>A Random Walk Down Wall Street</em>.</p>
+      <div class="res-link">See officer for full list</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MEMBERS ============ -->
+<section id="members">
+  <div class="section-head">
+    <div class="num gsap-fade">/ 03 — LEADERSHIP</div>
+    <div>
+      <h2 class="gsap-up">Meet the <em>officers</em>.</h2>
+      <p class="intro gsap-up">The 2025–26 Eastside Catholic Investing Club leadership team.</p>
+    </div>
+  </div>
+  <div class="spot-grid">
+
+    <div class="spot gsap-scale">
+      <div class="ph"><div class="role">PRESIDENT</div></div>
+      <div class="body">
+        <h5>Kavin Kumar</h5>
+        <div class="grade">SOPHOMORE · JOINED '25</div>
+        <q>Every pitch forces you to defend a number. That's the lesson.</q>
+      </div>
+    </div>
+
+    <div class="spot gsap-scale">
+      <div class="ph"><div class="role">VICE PRESIDENT</div></div>
+      <div class="body">
+        <h5>Yuvi Modi</h5>
+        <div class="grade">SOPHOMORE · JOINED '25</div>
+        <q>I liked chess. Then I found the market — same game, bigger board.</q>
+      </div>
+    </div>
+
+    <div class="spot gsap-scale">
+      <div class="ph"><div class="role">TREASURER</div></div>
+      <div class="body">
+        <h5>Vedansh Anand</h5>
+        <div class="grade">SOPHOMORE · JOINED '25</div>
+        <q>The club portfolio spreadsheet is my favorite thing at school.</q>
+      </div>
+    </div>
+
+    <div class="spot gsap-scale">
+      <div class="ph"><div class="role">SECRETARY</div></div>
+      <div class="body">
+        <h5>Will Grossi</h5>
+        <div class="grade">SOPHOMORE · JOINED '25</div>
+        <q>Writing a bear case is how you really learn a company.</q>
+      </div>
+    </div>
+
+    <div class="spot advisor gsap-scale">
+      <div class="ph"><div class="role">FACULTY ADVISOR</div></div>
+      <div class="body">
+        <h5>Mr. Trepanier</h5>
+        <div class="grade">FACULTY · ADVISOR &amp; HELPER</div>
+        <q>Our guiding hand — connecting the club to real-world finance and keeping us on track.</q>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="foot">
+    <div>
+      <div class="brand-f">
+        <img src="assets/logo.png" alt="" />
+        <div>
+          <div class="n">Eastside Catholic<br/>Investing Club</div>
+          <small>Growth · Knowledge · Future</small>
+        </div>
+      </div>
+      <p class="tag">A student-led investing society at Eastside Catholic School. Meeting Thursdays, 3:30pm.</p>
+    </div>
+    <div>
+      <h6>Site</h6>
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#resources">Resources</a></li>
+        <li><a href="#members">Leadership</a></li>
+      </ul>
+    </div>
+    <div>
+      <h6>Resources</h6>
+      <ul>
+        <li><a href="https://quantaify.org" target="_blank">Quantaify.org</a></li>
+        <li><a href="https://investopedia.com" target="_blank">Investopedia</a></li>
+        <li><a href="https://finance.yahoo.com" target="_blank">Yahoo Finance</a></li>
+        <li><a href="https://sec.gov/edgar" target="_blank">SEC EDGAR</a></li>
+      </ul>
+    </div>
+    <div>
+      <h6>Contact</h6>
+      <ul>
+        <li>Eastside Catholic School</li>
+        <li>Meets Thursdays 3:30pm</li>
+        <li>Mr. Trepanier · Faculty Advisor</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footbot">
+    <div>© 2026 · ECS INVESTING CLUB · FOR EDUCATIONAL PURPOSES ONLY</div>
+    <div>NOT INVESTMENT ADVICE · PAPER TRADING VIA QUANTAIFY.ORG</div>
+  </div>
+</footer>
+
+<script>
+/* ---- TICKER (live via Yahoo Finance + fallback) ---- */
+(function(){
+  const SYMBOLS = ['SPY','QQQ','AAPL','MSFT','NVDA','GOOGL','AMZN','META','TSLA','COST','V','JPM','DIS','COIN','AMD','NFLX','UBER','GLD','BTC-USD'];
+  const LABELS  = {'SPY':'S&amp;P 500','QQQ':'NASDAQ','BTC-USD':'BTC','GLD':'GOLD'};
+
+  const fallback = [
+    ['S&amp;P 500','5,308.13','+0.42'],['NASDAQ','18,737.21','+0.98'],['AAPL','201.36','-0.61'],
+    ['MSFT','458.87','+1.24'],['NVDA','131.38','+4.89'],['GOOGL','175.08','+0.33'],
+    ['AMZN','213.22','+0.77'],['META','640.12','+1.52'],['TSLA','339.44','+2.18'],
+    ['COST','1,012.88','-0.22'],['V','352.90','+0.44'],['JPM','269.44','+0.66'],
+    ['DIS','99.14','-0.88'],['COIN','263.18','+3.44'],['AMD','119.92','+1.22'],
+    ['NFLX','1,232.55','+0.71'],['UBER','88.44','+0.55'],['GOLD','3,312.40','+0.38'],['BTC','106,842','+1.94']
+  ];
+
+  function render(items){
+    const html = items.map(function(item){
+      var s=item[0], p=item[1], c=item[2];
+      var up = parseFloat(String(c).replace(',','')) >= 0;
+      var arrow = up ? '&#9650;' : '&#9660;';
+      var cls = up ? 'up' : 'dn';
+      var sign = (up && String(c).charAt(0) !== '+') ? '+' : '';
+      return '<span class="tick"><b>'+s+'</b> <span>'+p+'</span> <span class="pct '+cls+'"><span class="arrow">'+arrow+'</span> '+sign+c+'%</span></span>';
+    }).join('');
+    var el = document.getElementById('tickerMove');
+    if(el) el.innerHTML = html + html;
+  }
+
+  function parseResults(results){
+    return results.map(function(q){
+      var lbl = LABELS[q.symbol] || q.symbol;
+      var px = q.regularMarketPrice >= 1000
+        ? q.regularMarketPrice.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})
+        : q.regularMarketPrice.toFixed(2);
+      var pct = (q.regularMarketChangePercent >= 0 ? '+' : '') + q.regularMarketChangePercent.toFixed(2);
+      return [lbl, px, pct];
+    });
+  }
+
+  var yahooUrl = 'https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&symbols=' + SYMBOLS.join(',');
+
+  async function tryAllOrigins(){
+    var res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(yahooUrl));
+    var json = await res.json();
+    var data = JSON.parse(json.contents);
+    return parseResults(data.quoteResponse.result);
+  }
+
+  async function tryCorsProxy(){
+    var res = await fetch('https://corsproxy.io/?url=' + encodeURIComponent(yahooUrl));
+    var data = await res.json();
+    return parseResults(data.quoteResponse.result);
+  }
+
+  async function tryCodeTabs(){
+    var res = await fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(yahooUrl));
+    var data = await res.json();
+    return parseResults(data.quoteResponse.result);
+  }
+
+  async function fetchLive(){
+    var errors = [];
+    for(var fn of [tryAllOrigins, tryCorsProxy, tryCodeTabs]){
+      try{ return await fn(); }catch(e){ errors.push(e.message); }
+    }
+    throw new Error(errors.join(' | '));
+  }
+
+  render(fallback);
+  fetchLive().then(function(items){ render(items); }).catch(function(e){ console.warn('Ticker fallback:', e); });
+  setInterval(function(){ fetchLive().then(function(items){ render(items); }).catch(function(){}); }, 60000);
+})();
+
+/* ---- LOADER ---- */
+(function(){
+  const pctEl = document.getElementById('loadPct');
+  let p = 0;
+  const tick = setInterval(()=>{
+    p = Math.min(100, p + Math.random()*14 + 4);
+    pctEl.textContent = String(Math.floor(p)).padStart(2,'0')+'%';
+    if(p>=100) clearInterval(tick);
+  },120);
+  const hide = ()=>{ setTimeout(()=>document.getElementById('loader').classList.add('done'), 2400); };
+  if(document.readyState==='complete') hide();
+  else window.addEventListener('load', hide);
+})();
+
+
+
+/* ---- FORM SUBMIT ---- */
+function handleJoin(e){
+  e.preventDefault();
+  e.target.innerHTML = '<div style="font-family:\'Instrument Serif\',serif;font-size:28px;line-height:1.4;padding:24px 0;color:var(--bone)">Application received.<br/><em style="color:var(--orange)">See you Thursday.</em></div>';
+}
+
+/* ---- GSAP ANIMATIONS ---- */
+(function(){
+  if(typeof gsap==='undefined') return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Hero stagger
+  gsap.from('.hero .gsap-up', {
+    opacity:0, y:40,
+    duration:1, ease:'power3.out',
+    stagger:.12,
+    delay:.3
+  });
+
+  // Stat counters
+  document.querySelectorAll('[data-count]').forEach(el=>{
+    const target = parseInt(el.dataset.count);
+    ScrollTrigger.create({
+      trigger: el,
+      start:'top 85%',
+      once:true,
+      onEnter:()=>{
+        gsap.to({val:0},{val:target,duration:1.6,ease:'power2.out',
+          onUpdate:function(){ el.textContent = Math.round(this.targets()[0].val); }
+        });
+      }
+    });
+  });
+
+  // Generic scroll reveals
+  gsap.utils.toArray('.gsap-up:not(.hero .gsap-up)').forEach(el=>{
+    gsap.from(el,{
+      scrollTrigger:{trigger:el,start:'top 88%',once:true},
+      opacity:0, y:36, duration:.9, ease:'power3.out'
+    });
+  });
+  gsap.utils.toArray('.gsap-fade').forEach(el=>{
+    gsap.from(el,{
+      scrollTrigger:{trigger:el,start:'top 88%',once:true},
+      opacity:0, duration:.8, ease:'power2.out'
+    });
+  });
+  gsap.utils.toArray('.gsap-left:not(.hero .gsap-left)').forEach(el=>{
+    gsap.from(el,{
+      scrollTrigger:{trigger:el,start:'top 85%',once:true},
+      opacity:0, x:-40, duration:1, ease:'power3.out'
+    });
+  });
+  gsap.utils.toArray('.gsap-right:not(.hero .gsap-right)').forEach(el=>{
+    gsap.from(el,{
+      scrollTrigger:{trigger:el,start:'top 85%',once:true},
+      opacity:0, x:40, duration:1, ease:'power3.out'
+    });
+  });
+
+  // Cards with stagger
+  ['.about-card','.res-card','.spot'].forEach(sel=>{
+    const groups = {};
+    document.querySelectorAll(sel+'.gsap-scale').forEach(el=>{
+      const parent = el.parentElement;
+      if(!groups[parent]) groups[parent] = [];
+      groups[parent].push(el);
+    });
+    Object.values(groups).forEach(cards=>{
+      gsap.from(cards,{
+        scrollTrigger:{trigger:cards[0],start:'top 88%',once:true},
+        opacity:0, scale:.94, y:20, duration:.85, ease:'power3.out',
+        stagger:.1
+      });
+    });
+  });
+
+  // Static band letter-by-letter reveal
+  gsap.from('.static-band-inner > *',{
+    scrollTrigger:{trigger:'.static-band',start:'top 90%',once:true},
+    opacity:0, y:16, duration:.6, ease:'power2.out', stagger:.06
+  });
+
+  // Nav entrance
+  gsap.from('nav.top',{opacity:0,y:-16,duration:.7,ease:'power2.out',delay:.1});
+
+})();
+</script>
+</body>
+</html>
