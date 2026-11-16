@@ -1,7 +1,7 @@
-import kavinPhoto from '../assets/members/kavin-kumar.jpg'
-import yuviPhoto from '../assets/members/yuvi-modi.jpeg'
-import vedanshPhoto from '../assets/members/vedansh-anand.jpg'
-import willPhoto from '../assets/members/will-grossi.jpeg'
+import kavinPhoto from '../assets/members/kavin.jpg'
+import yuviPhoto from '../assets/members/yuvi.jpeg'
+import vedanshPhoto from '../assets/members/vedansh.jpg'
+import willPhoto from '../assets/members/will.jpeg'
 import trepanierPhoto from '../assets/members/mr-trepanier.jpg'
 
 export const stats = [
@@ -47,7 +47,7 @@ export const resources = [
   {
     tag: 'LEARNING',
     title: 'Perplexity Finance',
-    text: "AI-powered research for company snapshots, earnings, and financials. Ask a question and get sourced, up-to-date answers instead of digging through filings yourself.",
+    text: 'AI-powered research for company snapshots, earnings, and financials. Ask a question and get sourced, up-to-date answers instead of digging through filings yourself.',
     link: 'perplexity.ai/finance',
     href: 'https://www.perplexity.ai/finance',
   },
@@ -68,7 +68,7 @@ export const resources = [
   {
     tag: 'SCREENER',
     title: 'Finviz',
-    text: "A visual stock screener and market heatmap. Filter by sector, valuation, or performance to find candidates worth researching further.",
+    text: 'A visual stock screener and market heatmap. Filter by sector, valuation, or performance to find candidates worth researching further.',
     link: 'finviz.com',
     href: 'https://finviz.com',
   },
@@ -82,41 +82,11 @@ export const resources = [
 ]
 
 export const members = [
-  {
-    role: 'PRESIDENT',
-    name: 'Kavin Kumar',
-    grade: "JUNIOR · JOINED '25",
-    photo: kavinPhoto,
-    advisor: false,
-  },
-  {
-    role: 'VICE PRESIDENT',
-    name: 'Yuvi Modi',
-    grade: "JUNIOR · JOINED '25",
-    photo: yuviPhoto,
-    advisor: false,
-  },
-  {
-    role: 'TREASURER',
-    name: 'Vedansh Anand',
-    grade: "JUNIOR · JOINED '25",
-    photo: vedanshPhoto,
-    advisor: false,
-  },
-  {
-    role: 'SECRETARY',
-    name: 'Will Grossi',
-    grade: "JUNIOR · JOINED '25",
-    photo: willPhoto,
-    advisor: false,
-  },
-  {
-    role: 'ADVISOR',
-    name: 'Mr. Trepanier',
-    grade: 'FACULTY · ADVISOR / SPEAKER',
-    photo: trepanierPhoto,
-    advisor: true,
-  },
+  { role: 'PRESIDENT', name: 'Kavin', grade: "JUNIOR · JOINED '25", photo: kavinPhoto, advisor: false },
+  { role: 'VICE PRESIDENT', name: 'Yuvi', grade: "JUNIOR · JOINED '25", photo: yuviPhoto, advisor: false },
+  { role: 'TREASURER', name: 'Vedansh', grade: "JUNIOR · JOINED '25", photo: vedanshPhoto, advisor: false },
+  { role: 'SECRETARY', name: 'Will', grade: "JUNIOR · JOINED '25", photo: willPhoto, advisor: false },
+  { role: 'ADVISOR', name: 'Mr. Trepanier', grade: 'FACULTY · ADVISOR / SPEAKER', photo: trepanierPhoto, advisor: true },
 ]
 
 export const joinSteps = [

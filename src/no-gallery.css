@@ -1,0 +1,4 @@
+a[href="#gallery"] { display: none !important; }
+
+/* hide role tags on officer photos */
+.spot .ph .role { display: none !important; }
