@@ -1,38 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useReveal } from '../hooks/useReveal.js'
 
 const VIDEO_SRC = '/investing-final.mp4'
+const POSTER_SRC = '/investing-final-poster.jpg'
 
 function Film() {
   const videoRef = useRef(null)
-  const [muted, setMuted] = useState(true)
+  // Plays only when a visitor presses play, so start with sound on.
+  const [muted, setMuted] = useState(false)
   const numRef = useReveal()
   const headRef = useReveal()
   const introRef = useReveal()
   const frameRef = useReveal()
-
-  // React can set `muted` after insertion, which some browsers count as an
-  // unmuted autoplay and block. Force it on the element before playing.
-  useEffect(() => {
-    const el = videoRef.current
-    if (!el) return
-    el.muted = true
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.play().catch(() => {})
-        } else {
-          el.pause()
-        }
-      },
-      { threshold: 0.4 }
-    )
-
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
 
   function toggleSound() {
     const el = videoRef.current
@@ -64,6 +43,7 @@ function Film() {
           ref={videoRef}
           className="film-video"
           src={VIDEO_SRC}
+          poster={POSTER_SRC}
           muted={muted}
           loop
           playsInline
