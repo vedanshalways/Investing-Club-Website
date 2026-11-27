@@ -5,7 +5,7 @@ import willPhoto from '../assets/members/will.jpeg'
 import trepanierPhoto from '../assets/members/mr-trepanier.jpg'
 
 export const stats = [
-  { n: 22, suffix: '', label: 'Members', count: true },
+  { n: 31, suffix: '', label: 'Members', count: true },
   { n: 2025, suffix: '', label: 'Founded', count: true },
 ]
 
