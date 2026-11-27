@@ -1,5 +1,6 @@
 import { joinSteps } from '../data/club.js'
 import { useReveal } from '../hooks/useReveal.js'
+import { INSTAGRAM_URL, InstagramIcon } from './Footer.jsx'
 
 const FORM_URL =
   'https://forms.office.com/Pages/ResponsePage.aspx?id=60t_icBLTkKwk4gBajiPCDyU8M5CCSVLuQbd6ka97F9UNVdLRlQ2R0dOVjkzUzVBSFIwQjRBSUdKTC4u'
@@ -40,6 +41,15 @@ function Join() {
           </p>
           <a href={FORM_URL} target="_blank" rel="noreferrer" className="btn btn-orange">
             Contact Us &#8599;
+          </a>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="join-ig ig-link"
+          >
+            <InstagramIcon size={16} />
+            Follow @_investing_club
           </a>
         </div>
       </div>

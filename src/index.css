@@ -1072,6 +1072,22 @@ section {
 .btn-orange:hover {
   background: var(--bone);
 }
+.ig-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.join-ig {
+  display: flex;
+  width: fit-content;
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--bone);
+  transition: color 0.2s ease;
+}
+.join-ig:hover {
+  color: var(--orange);
+}
 
 /* ---------- Footer ---------- */
 footer {
